@@ -1,19 +1,43 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+describe("Crowd Funding Platform", function () {
+  it("To Start a new project", async function () {
+    const CrowdFunding = await ethers.getContractFactory("CrowdFunding");
+    const cf = await CrowdFunding.deploy();
+    await cf.deployed();
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+    await cf.startProject(
+      "Demo Project",
+      "Demo project for testing purpose",
+      1652438700,
+      100,
+      "Ukrain",
+      "War",
+      "demo.image"
+    )
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+    let projects = await cf.getAllProjects()
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+    projects = await Promise.all(projects.map(async prj => {
+      return {
+        projectID: prj.projectID.toString(),
+        creator: prj.creator,
+        title: prj.title,
+        description: prj.description,
+        targetAmount: prj.targetAmount.toString(),
+        amountRaised: prj.amountRaised.toString(),
+        deadline: prj.deadline.toString(),
+        location: prj.location,
+        category: prj.category,
+        image: prj.image,
+        state: prj.state,
+        noOfContributors: prj.noOfContributors.toString(),
+        requests: prj.requests,
+        noOfRequests: prj.noOfRequests.toString()
+      }
+    }))
+    expect(projects[0].projectID).to.be.equal("0");
   });
 });
