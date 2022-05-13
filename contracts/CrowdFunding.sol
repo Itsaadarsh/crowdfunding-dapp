@@ -1,10 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/utils/Counters.sol";
-
 contract CrowdFunding {
-    using Counters for Counters.Counter;
     address payable owner;
     uint256 private totalFeeCollected;
 
@@ -56,13 +53,8 @@ contract CrowdFunding {
 
     Contributions[] contributorsList;
     Project[] projectsList;
-    Counters.Counter private counterProjectID;
 
-    event FundingReceived(
-        address contributor,
-        uint256 amountContributed,
-        uint256 amountRaised
-    );
+    event FundingReceived(address contributor, uint256 amountContributed, uint256 amountRaised);
 
     event CreatorPaid(address recipient);
 
@@ -74,25 +66,111 @@ contract CrowdFunding {
         string memory _location,
         string memory _category,
         string memory _img
-    ) public {}
+    ) public {
+        projectsList.push();
+        contributorsList.push();
+        uint256 index = projectsList.length - 1;
 
-    function checkProjectStatus(uint256 _projectID) public {}
+        projectsList[index].projectID = index;
+        projectsList[index].creator = payable(address(msg.sender));
+        projectsList[index].title = _title;
+        projectsList[index].description = _desc;
+        projectsList[index].targetAmount = _target;
+        projectsList[index].amountRaised = 0;
+        projectsList[index].deadline = block.timestamp + (_deadline * 60);
+        projectsList[index].location = _location;
+        projectsList[index].category = _category;
+        projectsList[index].image = _img;
+        projectsList[index].state = State.FundRaising;
 
-    function contribute(uint256 _projectID) external payable returns (bool) {}
+        contributorsList[index].projectID = index;
+    }
 
-    function getRefund(uint256 _projectID) public returns (bool) {}
+    function setProjectStatus(uint256 _projectID) public {
+        if (projectsList[_projectID].amountRaised >= projectsList[_projectID].targetAmount) {
+            projectsList[_projectID].state = State.Successful;
+        } else if (projectsList[_projectID].deadline < block.timestamp) {
+            projectsList[_projectID].state = State.Expired;
+        } else {
+            projectsList[_projectID].state = State.FundRaising;
+        }
+    }
 
-    function getProjectDetails(uint256 _projectID)
-        public
-        view
-        returns (Project memory)
-    {}
+    function contribute(uint256 _projectID) external payable returns (bool) {
+        require(
+            msg.sender != projectsList[_projectID].creator,
+            "Project creator cannot contribute to the same project"
+        );
+        setProjectStatus(_projectID);
+        require(
+            projectsList[_projectID].state == State.FundRaising,
+            "This project is not raising funds anymore"
+        );
+
+        projectsList[_projectID].amountRaised += msg.value;
+        contributorsList[_projectID].contributions[msg.sender] += msg.value;
+        emit FundingReceived(msg.sender, msg.value, projectsList[_projectID].amountRaised);
+        if (contributorsList[_projectID].contributions[msg.sender] == 0) {
+            projectsList[_projectID].noOfContributors += 1;
+        }
+        setProjectStatus(_projectID);
+        return true;
+    }
+
+    function getRefund(uint256 _projectID) public returns (bool) {
+        setProjectStatus(_projectID);
+        require(
+            projectsList[_projectID].state == State.Expired,
+            "We cannot refund at the moment as this project is still raising funds"
+        );
+
+        require(
+            contributorsList[_projectID].contributions[msg.sender] > 0,
+            "You have not contributed to this project"
+        );
+
+        uint256 amountToBeRefunded = contributorsList[_projectID].contributions[msg.sender];
+        contributorsList[_projectID].contributions[msg.sender] = 0;
+        address payable sender = payable(msg.sender);
+
+        if (!sender.send(amountToBeRefunded)) {
+            contributorsList[_projectID].contributions[msg.sender] = amountToBeRefunded;
+            return false;
+        } else {
+            projectsList[_projectID].amountRaised -= amountToBeRefunded;
+            return true;
+        }
+    }
+
+    function getProjectDetails(uint256 _projectID) public view returns (Project memory) {
+        return projectsList[_projectID];
+    }
 
     function createRequest(
         uint256 _projectID,
         string memory _desc,
         uint256 _value
-    ) public {}
+    ) public {
+        require(
+            projectsList[_projectID].state == State.Successful,
+            "Project status is not successful, cannot create a request"
+        );
+        require(msg.sender == projectsList[_projectID].creator, "One project creator can create a request");
+        require(
+            _value <= projectsList[_projectID].amountRaised,
+            "Withdrawal amount cannot be more than the amount raised"
+        );
+
+        projectsList[_projectID].requests.push();
+        contributorsList[_projectID].voters.push();
+
+        uint256 index = projectsList[_projectID].requests.length - 1;
+        projectsList[_projectID].requests[index].requestID = index;
+        projectsList[_projectID].requests[index].reqDescription = _desc;
+        projectsList[_projectID].requests[index].reqAmount = _value;
+        projectsList[_projectID].requests[index].reqStatus = false;
+        projectsList[_projectID].noOfRequests += 1;
+    }
 
     function sendPayout(
         uint256 _projectID,
@@ -103,19 +181,19 @@ contract CrowdFunding {
 
     function createVote(uint256 _projectID, uint256 _requestID) public {}
 
-    function getContractBalance() public view returns (uint256) {}
+    function getContractBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
 
-    function getAllProjects() public view returns (Project[] memory) {}
+    function getAllProjects() public view returns (Project[] memory) {
+        return projectsList;
+    }
 
-    function getAllRequest(uint256 _projectID)
-        public
-        view
-        returns (Request[] memory)
-    {}
+    function getAllRequest(uint256 _projectID) public view returns (Request[] memory) {
+        return projectsList[_projectID].requests;
+    }
 
-    function getMyContributions(uint256 _projectID, address _address)
-        public
-        view
-        returns (uint256)
-    {}
+    function getMyContributions(uint256 _projectID, address _address) public view returns (uint256) {
+        return contributorsList[_projectID].contributions[_address];
+    }
 }
