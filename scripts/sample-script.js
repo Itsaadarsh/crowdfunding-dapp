@@ -1,12 +1,12 @@
 const hre = require("hardhat");
 
 async function main() {
-  const Greeter = await hre.ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+  const CrowdFunding = await hre.ethers.getContractFactory("CrowdFunding");
+  const cf = await CrowdFunding.deploy();
 
-  await greeter.deployed();
+  await cf.deployed();
 
-  console.log("Greeter deployed to:", greeter.address);
+  console.log("CrowdFunding deployed to:", cf.address);
 }
 
 main()
