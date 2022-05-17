@@ -76,8 +76,8 @@ const Home: NextPage = () => {
     return <h1 className="px-20 py-10 text-3xl">No items in marketplace</h1>;
 
   return (
-    <section>
-      <div className="flex justify-around m-20">
+    <section className="mx-28 my-10">
+      <div className="flex">
         <div className="w-1/2">
           <p className="text-4xl my-20">
             Helping the needy always spreads smile on faces. Donate here to give
@@ -91,9 +91,10 @@ const Home: NextPage = () => {
             <BsArrowRight size={20} className="ml-1" />
           </button>
         </div>
-        <Image src="/assets/homebg.png" width={600} height={400}></Image>
+        <Image src="/assets/homebg.png" width={650} height={400}></Image>
       </div>
-      <div className="m-10 ">
+      <p className="font-bold text-4xl mt-20">Current Fundraisers</p>
+      <div className="flex flex-row flex-wrap">
         {frProjects.map((project: PROJECT, index) => {
           return <ProjectCard key={index} data={project} />;
         })}
