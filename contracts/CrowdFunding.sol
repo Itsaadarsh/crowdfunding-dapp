@@ -76,7 +76,7 @@ contract CrowdFunding {
         projectsList[index].description = _desc;
         projectsList[index].targetAmount = _target;
         projectsList[index].amountRaised = 0;
-        projectsList[index].deadline = block.timestamp + (_deadline * 60);
+        projectsList[index].deadline = _deadline;
         projectsList[index].location = _location;
         projectsList[index].category = _category;
         projectsList[index].image = _img;

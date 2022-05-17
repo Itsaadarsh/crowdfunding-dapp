@@ -3,18 +3,42 @@ import type { NextPage } from "next";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { BsArrowRight } from "react-icons/bs";
-import NavBar from "../components/Navbar";
 import { cfContractAddress } from "../config";
 import CrowdFunding from "../artifacts/contracts/CrowdFunding.sol/CrowdFunding.json";
 import ProjectCard from "../components/ProjectCard";
 
+export interface PROJECT {
+  projectID: number;
+  creator: string;
+  title: string;
+  description: string;
+  targetAmount: number;
+  amountRaised: number;
+  deadline: string;
+  location: string;
+  category: string;
+  image: string;
+  state: string;
+  noOfContributors: number;
+}
+
 const Home: NextPage = () => {
-  const [frProjects, setFrProjects] = useState([]);
+  const [frProjects, setFrProjects] = useState<PROJECT[]>([]);
   const [loadingState, setLoadingState] = useState<string>("not-loaded");
 
   useEffect(() => {
     loadFundRaisingProjects();
   }, []);
+
+  function checkState(state: number): string {
+    if (state == 0) {
+      return "Successful";
+    } else if (state == 1) {
+      return "Fund Raising";
+    } else {
+      return "Expired";
+    }
+  }
 
   async function loadFundRaisingProjects() {
     const provider = new ethers.providers.JsonRpcProvider();
@@ -24,27 +48,28 @@ const Home: NextPage = () => {
       provider
     );
     const data = await fundRaisingContract.getAllProjects();
-    console.log(data);
 
-    // const items: NFTItem[] = await Promise.all(
-    //   data.map(async (i: any) => {
-    //     const tokenUri = await tokenContract.tokenURI(i.tokenId);
-    //     const meta = await axios.get(tokenUri);
-    //     let price = ethers.utils.formatUnits(i.price.toString(), "ether");
-    //     let item = {
-    //       price,
-    //       tokenId: i.tokenId.toNumber(),
-    //       seller: i.seller,
-    //       owner: i.owner,
-    //       image: meta.data.image,
-    //       name: meta.data.name,
-    //       description: meta.data.description,
-    //     };
-    //     return item;
-    //   })
-    // );
-    // setFrProjects(items);
-    // setLoadingState("loaded");
+    const items: PROJECT[] = await Promise.all(
+      data.map(async (i: any) => {
+        let item: PROJECT = {
+          projectID: i.projectID.toNumber(),
+          creator: i.creator,
+          title: i.title,
+          description: i.description,
+          targetAmount: i.targetAmount.toNumber(),
+          amountRaised: i.amountRaised.toNumber(),
+          deadline: new Date(+i.deadline * 1000).toLocaleString(),
+          location: i.location,
+          category: i.category,
+          image: i.image,
+          state: checkState(i.state),
+          noOfContributors: i.noOfContributors.toNumber(),
+        };
+        return item;
+      })
+    );
+    setFrProjects(items);
+    setLoadingState("loaded");
   }
 
   if (loadingState === "loaded" && !frProjects.length)
@@ -52,7 +77,6 @@ const Home: NextPage = () => {
 
   return (
     <section>
-      <NavBar />
       <div className="flex justify-around m-20">
         <div className="w-1/2">
           <p className="text-4xl my-20">
@@ -70,7 +94,9 @@ const Home: NextPage = () => {
         <Image src="/assets/homebg.png" width={600} height={400}></Image>
       </div>
       <div className="m-10 ">
-        <ProjectCard />
+        {frProjects.map((project: PROJECT, index) => {
+          return <ProjectCard key={index} data={project} />;
+        })}
       </div>
     </section>
   );

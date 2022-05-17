@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import { BsLink45Deg } from "react-icons/bs";
+import Link from "next/link";
 
 const NavBar: NextPage = () => {
   return (
@@ -10,18 +11,16 @@ const NavBar: NextPage = () => {
         </span>
       </div>
       <div>
-        <a
-          href="/one"
-          className="text-lg no-underline text-grey-darkest hover:text-blue-dark ml-10"
-        >
-          Home
-        </a>
-        <a
-          href="/two"
-          className="text-lg no-underline text-grey-darkest hover:text-blue-dark ml-10 pr-10"
-        >
-          Create
-        </a>
+        <Link href="/">
+          <a className="text-lg no-underline text-grey-darkest hover:text-blue-dark ml-10">
+            Home
+          </a>
+        </Link>
+        <Link href="/create">
+          <a className="text-lg no-underline text-grey-darkest hover:text-blue-dark ml-10 pr-10">
+            Create
+          </a>
+        </Link>
         <button
           type="button"
           data-modal-toggle="crypto-modal"
