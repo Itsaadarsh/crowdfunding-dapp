@@ -7,6 +7,7 @@ import { cfContractAddress } from "../config";
 import CrowdFunding from "../artifacts/contracts/CrowdFunding.sol/CrowdFunding.json";
 import ProjectCard from "../components/ProjectCard";
 import { checkState } from "../helper/checkState";
+import { useRouter } from "next/router";
 
 export interface PROJECT {
   projectID: number;
@@ -30,6 +31,8 @@ const Home: NextPage = () => {
   useEffect(() => {
     loadFundRaisingProjects();
   }, []);
+
+  const router = useRouter();
 
   async function loadFundRaisingProjects() {
     const provider = new ethers.providers.JsonRpcProvider();
@@ -73,6 +76,9 @@ const Home: NextPage = () => {
           </p>
           <button
             type="button"
+            onClick={() => {
+              router.push("/create");
+            }}
             className="text-gray-900 hover:bg-green-300 border border-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-pink-500 "
           >
             Start your campaign

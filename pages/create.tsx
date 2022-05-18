@@ -142,10 +142,10 @@ const Create: NextPage = () => {
           }
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 "
         >
-          <option>United States</option>
-          <option>Canada</option>
-          <option>France</option>
-          <option>Germany</option>
+          <option>Reconstruction</option>
+          <option>Food and Drinks</option>
+          <option>Hardware and Electronics</option>
+          <option>Others</option>
         </select>
       </div>
       <div className="mb-6">

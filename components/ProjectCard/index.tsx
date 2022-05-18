@@ -23,8 +23,6 @@ const ProjectCard: React.FC<{ data: PROJECT }> = ({ data }) => {
   }
 
   function cutDescription(des: string): string {
-    console.log(des.length);
-
     if (des.length > 30) {
       des = des.substring(0, 55) + "...";
     }
