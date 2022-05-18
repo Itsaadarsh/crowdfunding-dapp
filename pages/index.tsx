@@ -6,6 +6,7 @@ import { BsArrowRight } from "react-icons/bs";
 import { cfContractAddress } from "../config";
 import CrowdFunding from "../artifacts/contracts/CrowdFunding.sol/CrowdFunding.json";
 import ProjectCard from "../components/ProjectCard";
+import { checkState } from "../helper/checkState";
 
 export interface PROJECT {
   projectID: number;
@@ -29,16 +30,6 @@ const Home: NextPage = () => {
   useEffect(() => {
     loadFundRaisingProjects();
   }, []);
-
-  function checkState(state: number): string {
-    if (state == 0) {
-      return "Successful";
-    } else if (state == 1) {
-      return "Fund Raising";
-    } else {
-      return "Expired";
-    }
-  }
 
   async function loadFundRaisingProjects() {
     const provider = new ethers.providers.JsonRpcProvider();
@@ -72,9 +63,6 @@ const Home: NextPage = () => {
     setLoadingState("loaded");
   }
 
-  if (loadingState === "loaded" && !frProjects.length)
-    return <h1 className="px-20 py-10 text-3xl">No items in marketplace</h1>;
-
   return (
     <section className="mx-28 my-10">
       <div className="flex">
@@ -94,11 +82,17 @@ const Home: NextPage = () => {
         <Image src="/assets/homebg.png" width={650} height={400}></Image>
       </div>
       <p className="font-bold text-4xl mt-20">Current Fundraisers</p>
-      <div className="flex flex-row flex-wrap">
-        {frProjects.map((project: PROJECT, index) => {
-          return <ProjectCard key={index} data={project} />;
-        })}
-      </div>
+      {loadingState === "loaded" && !frProjects.length ? (
+        <h1 className="py-3 text-2xl">
+          Loading data from blockchain! Please wait!
+        </h1>
+      ) : (
+        <div className="flex flex-row flex-wrap">
+          {frProjects.map((project: PROJECT, index) => {
+            return <ProjectCard key={index} data={project} />;
+          })}
+        </div>
+      )}
     </section>
   );
 };
