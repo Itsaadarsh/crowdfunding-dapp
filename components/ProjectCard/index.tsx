@@ -33,7 +33,7 @@ const ProjectCard: React.FC<{ data: PROJECT }> = ({ data }) => {
 
   return (
     <a
-      href="/campaign"
+      href={"/campaign/" + data.projectID}
       className="flex border-2 border-gray-400 bg-white rounded-lg flex-row max-w-xl my-10 mr-32"
     >
       <Image
