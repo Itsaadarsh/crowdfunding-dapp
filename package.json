@@ -10,6 +10,7 @@
     "format": "npx prettier --write 'contracts/**/*.sol'"
   },
   "dependencies": {
+    "@metamask/providers": "^8.1.1",
     "@nomiclabs/hardhat-ethers": "^2.0.6",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.6.0",

@@ -1,12 +1,16 @@
-import { ethers } from "ethers";
+import { ethers, utils } from "ethers";
 import type { NextPage } from "next";
 import Image from "next/image";
 import { cfContractAddress } from "../../config";
 import CrowdFunding from "../../artifacts/contracts/CrowdFunding.sol/CrowdFunding.json";
 import { PROJECT } from "..";
 import { checkState } from "../../helper/checkState";
+import { useState } from "react";
+import PaymentModal from "../../components/PaymentModal";
 
 const Campaign: NextPage = ({ campaign }: any) => {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <section className="my-20">
       {!campaign ? (
@@ -18,7 +22,7 @@ const Campaign: NextPage = ({ campaign }: any) => {
           <div className="flex-col">
             <Image
               className="rounded-2xl"
-              src="/assets/cardimg.jpg"
+              src={campaign.image}
               width={550}
               height={400}
             ></Image>
@@ -56,9 +60,26 @@ const Campaign: NextPage = ({ campaign }: any) => {
             <span className="text-base text-gray-900">
               Deadline: {campaign?.deadline}
             </span>
-            <button className="text-gray-900 hover:bg-green-300 border border-gray-200 font-medium rounded-md  py-4 text-center bg-pink-500">
-              Donate now
+            <button
+              className="text-gray-900 hover:bg-green-300 border border-gray-200 font-medium rounded-md  py-4 text-center bg-pink-500"
+              type="button"
+              onClick={() => setShowModal(true)}
+            >
+              Donate Now
             </button>
+            {showModal ? (
+              <PaymentModal
+                data={{
+                  image: campaign.image,
+                  title: campaign.title,
+                  creator: campaign.creator,
+                  category: campaign.category,
+                  noOfContributors: campaign.noOfContributors,
+                  projectID: campaign.projectID,
+                }}
+                setShowModal={setShowModal}
+              />
+            ) : null}
             <button className="text-gray-900 hover:bg-green-300 border border-gray-200 font-medium rounded-md py-4 text-center bg-pink-500">
               Share
             </button>
@@ -90,7 +111,7 @@ export async function getStaticPaths() {
         title: i.title,
         description: i.description,
         targetAmount: i.targetAmount.toNumber(),
-        amountRaised: i.amountRaised.toNumber(),
+        amountRaised: +utils.formatEther(i.amountRaised),
         deadline: new Date(+i.deadline * 1000).toLocaleString(),
         location: i.location,
         category: i.category,
@@ -133,7 +154,7 @@ export async function getStaticProps({ params }: any) {
       title: data.title,
       description: data.description,
       targetAmount: data.targetAmount.toNumber(),
-      amountRaised: data.amountRaised.toNumber(),
+      amountRaised: +utils.formatEther(data.amountRaised),
       deadline: new Date(+data.deadline * 1000).toLocaleString(),
       location: data.location,
       category: data.category,

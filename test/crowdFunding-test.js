@@ -38,6 +38,7 @@ describe("Crowd Funding Platform", function () {
         noOfRequests: prj.noOfRequests.toString()
       }
     }))
-    expect(projects[0].projectID).to.be.equal("0");
+    console.log(projects[0].amountRaised);
+    expect(projects[0].noOfContributors).to.be.equal("1");
   });
 });

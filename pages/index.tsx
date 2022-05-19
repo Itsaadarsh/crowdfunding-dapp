@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, utils } from "ethers";
 import type { NextPage } from "next";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -51,7 +51,7 @@ const Home: NextPage = () => {
           title: i.title,
           description: i.description,
           targetAmount: i.targetAmount.toNumber(),
-          amountRaised: i.amountRaised.toNumber(),
+          amountRaised: +utils.formatEther(i.amountRaised),
           deadline: new Date(+i.deadline * 1000).toLocaleString(),
           location: i.location,
           category: i.category,
@@ -62,6 +62,8 @@ const Home: NextPage = () => {
         return item;
       })
     );
+    console.log(data);
+
     setFrProjects(items);
     setLoadingState("loaded");
   }
