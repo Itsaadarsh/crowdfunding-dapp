@@ -51,7 +51,7 @@ const Home: NextPage = () => {
           title: i.title,
           description: i.description,
           targetAmount: i.targetAmount.toNumber(),
-          amountRaised: +utils.formatEther(i.amountRaised),
+          amountRaised: i.amountRaised.toNumber(),
           deadline: new Date(+i.deadline * 1000).toLocaleString(),
           location: i.location,
           category: i.category,

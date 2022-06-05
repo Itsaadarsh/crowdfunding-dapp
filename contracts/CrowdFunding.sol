@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "hardhat/console.sol";
+
 contract CrowdFunding {
     address payable owner;
     uint256 private totalFeeCollected;
@@ -107,11 +109,11 @@ contract CrowdFunding {
         );
 
         projectsList[_projectID].amountRaised += msg.value;
-        contributorsList[_projectID].contributions[msg.sender] += msg.value;
-        emit FundingReceived(msg.sender, msg.value, projectsList[_projectID].amountRaised);
         if (contributorsList[_projectID].contributions[msg.sender] == 0) {
             projectsList[_projectID].noOfContributors += 1;
         }
+        contributorsList[_projectID].contributions[msg.sender] += msg.value;
+        emit FundingReceived(msg.sender, msg.value, projectsList[_projectID].amountRaised);
         setProjectStatus(_projectID);
         return true;
     }

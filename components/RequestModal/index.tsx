@@ -8,8 +8,9 @@ import CrowdFunding from "../../artifacts/contracts/CrowdFunding.sol/CrowdFundin
 import { MetaMaskInpageProvider } from "@metamask/providers";
 import { useRouter } from "next/router";
 
-const PaymentModal: React.FC<any> = ({ data, setShowModal }) => {
+const RequestModal: React.FC<any> = ({ data, setShowModal }) => {
   const [maticInput, updateMaticInput] = useState<string>("");
+  const [descInput, updateDescInput] = useState<string>("");
   const router = useRouter();
 
   async function contribute() {
@@ -20,27 +21,29 @@ const PaymentModal: React.FC<any> = ({ data, setShowModal }) => {
     await provider.send("eth_requestAccounts", []);
     const accountAddress = await signer.getAddress();
 
-    let accountBalance: any = await provider.getBalance(accountAddress);
-    accountBalance = utils.formatEther(accountBalance);
-
     const contract = new ethers.Contract(
       cfContractAddress,
       CrowdFunding.abi,
       signer
     );
 
-    if (accountAddress.toLowerCase() == data.creator.toLowerCase()) {
-      alert("Campaign creator cannot contribute to their own project");
-    } else if (+accountBalance <= +maticInput) {
-      alert("Insufficient MATIC in wallet to complete this contribution");
+    if (data.state.toLowerCase() !== "successful") {
+      alert("This campaign is still raising funds, you cannot withdraw now");
+    } else if (accountAddress.toLowerCase() !== data.creator.toLowerCase()) {
+      alert("Only campaign creator can create a request");
     } else if (maticInput == "" || +maticInput <= 0) {
       alert("Contribution has to be more than 0 MATIC");
+    } else if (descInput == "") {
+      alert("Please enter the decription");
+    } else if (+maticInput > +data.amountRaised) {
+      alert("Withdrawal amount cannot be greater than amount raised");
     } else {
       try {
-        const txn = await contract.contribute(+data.projectID, {
-          value: maticInput,
-        });
-
+        const txn = await contract.createRequest(
+          +data.projectID,
+          descInput,
+          maticInput
+        );
         await txn.wait();
       } catch (err) {
         console.log(err);
@@ -84,27 +87,26 @@ const PaymentModal: React.FC<any> = ({ data, setShowModal }) => {
                     <span className="font-bold"> {data.noOfContributors}</span>
                   </p>
                   <p>
-                    Your donation will benefit
-                    <span className="font-bold">
-                      {" "}
-                      {data.creator.substring(0, 5) +
-                        "....." +
-                        data.creator.substring(
-                          data.creator.length - 3,
-                          data.creator.length
-                        )}
-                    </span>
+                    Amount Raised:
+                    <span className="font-bold"> {data.amountRaised}</span>
                   </p>
                 </div>
               </div>
               <div className="flex-col mt-10">
-                <p className="font-bold">Enter Your Contribution</p>
+                <p className="font-bold">Enter Withdrawal Amount</p>
                 <input
                   type="number"
                   onChange={(e) => updateMaticInput(e.target.value)}
                   placeholder="Enter in MATIC"
                   className="my-5 px-3 py-3 placeholder-black  rounded text-lg border-2 border-black w-full"
                 />
+                <p className="font-bold">Enter Request Description</p>
+                <textarea
+                  rows={4}
+                  onChange={(e) => updateDescInput(e.target.value)}
+                  placeholder="Description"
+                  className="my-5 px-3 py-3 placeholder-black  rounded text-lg border-2 border-black w-full"
+                ></textarea>
                 <p>
                   *5% of total donation will go in the funds of CroudFunding as
                   royalty charges.
@@ -114,7 +116,7 @@ const PaymentModal: React.FC<any> = ({ data, setShowModal }) => {
                 onClick={contribute}
                 className="text-gray-900 hover:bg-green-300 border border-gray-200 font-bold rounded-md py-3 text-center bg-pink-500 w-1/3 mt-8"
               >
-                PAY
+                REQUEST
               </button>
             </div>
           </div>
@@ -125,4 +127,4 @@ const PaymentModal: React.FC<any> = ({ data, setShowModal }) => {
   );
 };
 
-export default PaymentModal;
+export default RequestModal;

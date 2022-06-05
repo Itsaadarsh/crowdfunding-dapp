@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { utils } = require("ethers");
 const { ethers } = require("hardhat");
 
 describe("Crowd Funding Platform", function () {
@@ -10,7 +11,7 @@ describe("Crowd Funding Platform", function () {
     await cf.startProject(
       "Demo Project",
       "Demo project for testing purpose",
-      1652438700,
+      1653154189,
       100,
       "Ukrain",
       "War",
@@ -38,7 +39,12 @@ describe("Crowd Funding Platform", function () {
         noOfRequests: prj.noOfRequests.toString()
       }
     }))
-    console.log(projects[0].amountRaised);
-    expect(projects[0].noOfContributors).to.be.equal("1");
+    console.log("before", projects[0].state);
+
+    let res = await cf.contribute(projects[0].projectID, { value: "110" })
+    let status = await cf.getProjectDetails(projects[0].projectID)
+    console.log("after", status.state);
+
+    expect(projects[0].state).to.be.equal(1);
   });
 });

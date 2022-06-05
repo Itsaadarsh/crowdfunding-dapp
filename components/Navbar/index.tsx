@@ -85,7 +85,17 @@ const NavBar: NextPage = () => {
             <ul className="dropdown-menu absolute hidden text-gray-700 pt-1">
               <li className="">
                 <button
-                  className="rounded-t bg-green-200 hover:bg-pink-400 py-2 px-4 block whitespace-no-wrap"
+                  className="rounded-t bg-green-200 hover:bg-pink-400 py-2 px-10 block whitespace-no-wrap"
+                  onClick={() => {
+                    router.push("/profile");
+                  }}
+                >
+                  Profile
+                </button>
+              </li>
+              <li className="">
+                <button
+                  className="rounded-t bg-green-200 hover:bg-pink-400 py-2 px-8 block whitespace-no-wrap"
                   onClick={disconnect}
                 >
                   Sign Out

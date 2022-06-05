@@ -5,11 +5,27 @@ import { cfContractAddress } from "../../config";
 import CrowdFunding from "../../artifacts/contracts/CrowdFunding.sol/CrowdFunding.json";
 import { PROJECT } from "..";
 import { checkState } from "../../helper/checkState";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PaymentModal from "../../components/PaymentModal";
+import RequestModal from "../../components/RequestModal";
+import Web3Modal from "web3modal";
 
 const Campaign: NextPage = ({ campaign }: any) => {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState("");
+  const [account, setAccount] = useState<string>();
+
+  useEffect(() => {
+    const connectWalletOnPageLoad = async () => {
+      const web3Modal = new Web3Modal();
+      const connection = await web3Modal.connect();
+      const provider = new ethers.providers.Web3Provider(connection);
+      const signer = provider.getSigner();
+      await provider.send("eth_requestAccounts", []);
+      const accountAddress = await signer.getAddress();
+      setAccount(accountAddress);
+    };
+    connectWalletOnPageLoad();
+  }, []);
 
   return (
     <section className="my-20">
@@ -60,19 +76,44 @@ const Campaign: NextPage = ({ campaign }: any) => {
             <span className="text-base text-gray-900">
               Deadline: {campaign?.deadline}
             </span>
-            <button
-              className="text-gray-900 hover:bg-green-300 border border-gray-200 font-medium rounded-md  py-4 text-center bg-pink-500"
-              type="button"
-              onClick={() => setShowModal(true)}
-            >
-              Donate Now
-            </button>
-            {showModal ? (
+            {campaign.creator.toLowerCase() === account?.toLowerCase() ? (
+              <button
+                className="text-gray-900 hover:bg-green-300 border border-gray-200 font-medium rounded-md  py-4 text-center bg-pink-500"
+                type="button"
+                onClick={() => setShowModal("request")}
+              >
+                Request
+              </button>
+            ) : (
+              <button
+                className="text-gray-900 hover:bg-green-300 border border-gray-200 font-medium rounded-md  py-4 text-center bg-pink-500"
+                type="button"
+                onClick={() => setShowModal("donate")}
+              >
+                Donate Now
+              </button>
+            )}
+            {showModal === "donate" ? (
               <PaymentModal
                 data={{
                   image: campaign.image,
                   title: campaign.title,
                   creator: campaign.creator,
+                  category: campaign.category,
+                  noOfContributors: campaign.noOfContributors,
+                  projectID: campaign.projectID,
+                }}
+                setShowModal={setShowModal}
+              />
+            ) : null}
+            {showModal === "request" ? (
+              <RequestModal
+                data={{
+                  image: campaign.image,
+                  title: campaign.title,
+                  amountRaised: campaign.amountRaised,
+                  creator: campaign.creator,
+                  state: campaign.state,
                   category: campaign.category,
                   noOfContributors: campaign.noOfContributors,
                   projectID: campaign.projectID,
@@ -111,7 +152,7 @@ export async function getStaticPaths() {
         title: i.title,
         description: i.description,
         targetAmount: i.targetAmount.toNumber(),
-        amountRaised: +utils.formatEther(i.amountRaised),
+        amountRaised: i.amountRaised.toNumber(),
         deadline: new Date(+i.deadline * 1000).toLocaleString(),
         location: i.location,
         category: i.category,
@@ -154,7 +195,7 @@ export async function getStaticProps({ params }: any) {
       title: data.title,
       description: data.description,
       targetAmount: data.targetAmount.toNumber(),
-      amountRaised: +utils.formatEther(data.amountRaised),
+      amountRaised: data.amountRaised.toNumber(),
       deadline: new Date(+data.deadline * 1000).toLocaleString(),
       location: data.location,
       category: data.category,
@@ -162,6 +203,7 @@ export async function getStaticProps({ params }: any) {
       state: checkState(data.state),
       noOfContributors: data.noOfContributors.toNumber(),
     };
+    console.log(campaignData);
   } catch (err) {
     console.log(err);
   }
